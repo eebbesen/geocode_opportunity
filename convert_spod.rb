@@ -1,5 +1,5 @@
 require 'csv'
-require 'byebug'
+
 ##
 # Convert Socrata data to have separate lat/long columns
 class ConvertSpod
@@ -32,7 +32,9 @@ class ConvertSpod
   end
 end
 
-fn = ARGV[0]
+
+
+filename = ARGV[0]
 location_index = ARGV[1]
-cs = ConvertSpod.new(fn)
+cs = ConvertSpod.new filename
 cs.convertCsv location_index.to_i
