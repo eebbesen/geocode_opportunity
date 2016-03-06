@@ -24,3 +24,5 @@ Some records don't have lat/long as part of the location.  Some entire datasets 
 Currently these records are printed to the console prepended with `NO LAT/LONG FOUND FOR`.
 
 In the future I hope to use the address to grab the latitude and longitide.
+
+### This script was developed during the [March 2016 Geo:Code 2.0](http://www.hennepin.us/geocode) code-a-thon.
