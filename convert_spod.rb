@@ -54,7 +54,6 @@ class ConvertSpod
     return [nil,nil,:skipped] if @skip_geocoding
     cleansed = address_cleaner address
     begin
-      byebug
       Geocoder.coordinates(cleansed) + [Geocoder.config[:lookup]]
       sleep 0.22
     rescue StandardError => e
@@ -89,7 +88,8 @@ class ConvertSpod
   end
 
   def address_cleaner(address)
-    if elements = address.match(/(.*)\s*-.*(.*)/).to_a
+    elements = address.match(/(.*)\s*-.*(.*)/).to_a
+    if elements.size > 0
       elements.shift
       elements.join "\n"
     else
@@ -101,6 +101,7 @@ end
 # 0: filename
 # 1: location index
 # 2: 'skip' to avoid geocoding attempt (optional)
+puts 'Must supply a filename and index of location column' unless ARGV.size > 1
 ConvertSpod.new(ARGV[0], ARGV[1], ARGV[2]).convertCsv
 
 
