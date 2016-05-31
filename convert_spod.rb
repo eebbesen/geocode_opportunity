@@ -6,6 +6,8 @@ require 'byebug'
 ##
 # Convert Socrata data to have separate lat/long columns
 class ConvertSpod
+  LATLONG_REGEX = /\((\d.*)\)/
+
   def initialize(filename,location_index,skip_geocoding)
     @filename = filename
     @location_index = location_index.to_i
@@ -42,8 +44,8 @@ class ConvertSpod
   end
 
   def extract_latlong(address)
-    if address.match(/\n\((\d.*)\)/)
-      latlong = address.match(/\n\((\d.*)\)/)[1]
+    if address.match(LATLONG_REGEX)
+      latlong = address.match(LATLONG_REGEX)[1]
       [latlong.split(',')[0].strip, latlong.split(',')[1].strip, :extracted]
     else
       nil
@@ -97,11 +99,3 @@ class ConvertSpod
     end
   end
 end
-
-# 0: filename
-# 1: location index
-# 2: 'skip' to avoid geocoding attempt (optional)
-puts 'Must supply a filename and index of location column' unless ARGV.size > 1
-ConvertSpod.new(ARGV[0], ARGV[1], ARGV[2]).convertCsv
-
-
