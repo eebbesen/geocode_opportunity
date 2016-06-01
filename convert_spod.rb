@@ -6,6 +6,9 @@ require 'byebug'
 ##
 # Convert Socrata data to have separate lat/long columns
 class ConvertSpod
+  LATLONG_REGEX = /\((\d.*)\)/
+  LATLONG_REGEX_2 = /\((.*),\s*(-?.*)\)/ # possibly for address_cleaner
+
   def initialize(filename,location_index,skip_geocoding)
     @filename = filename
     @location_index = location_index.to_i
@@ -42,8 +45,8 @@ class ConvertSpod
   end
 
   def extract_latlong(address)
-    if address.match(/\n\((\d.*)\)/)
-      latlong = address.match(/\n\((\d.*)\)/)[1]
+    if address.match(LATLONG_REGEX)
+      latlong = address.match(LATLONG_REGEX)[1]
       [latlong.split(',')[0].strip, latlong.split(',')[1].strip, :extracted]
     else
       nil
@@ -54,8 +57,8 @@ class ConvertSpod
     return [nil,nil,:skipped] if @skip_geocoding
     cleansed = address_cleaner address
     begin
-      Geocoder.coordinates(cleansed) + [Geocoder.config[:lookup]]
-      sleep 0.22
+      sleep 0.22 # prevent ddosing
+      ret = Geocoder.coordinates(cleansed) + [Geocoder.config[:lookup]]
     rescue StandardError => e
       puts "#{e.class}:#{e.message} for #{address}"
     end
@@ -87,6 +90,7 @@ class ConvertSpod
     new_row
   end
 
+  # not exactly sure what addresses this was meant to handle
   def address_cleaner(address)
     elements = address.match(/(.*)\s*-.*(.*)/).to_a
     if elements.size > 0
@@ -97,11 +101,3 @@ class ConvertSpod
     end
   end
 end
-
-# 0: filename
-# 1: location index
-# 2: 'skip' to avoid geocoding attempt (optional)
-puts 'Must supply a filename and index of location column' unless ARGV.size > 1
-ConvertSpod.new(ARGV[0], ARGV[1], ARGV[2]).convertCsv
-
-
