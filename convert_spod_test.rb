@@ -4,6 +4,10 @@ require "./convert_spod"
 class ConvertSpodSubject < ConvertSpod
   def initialize
   end
+
+  def skip_geocoding=(val)
+    @skip_geocoding = val
+  end
 end
 
 class ConvertSpodTest < Minitest::Test
@@ -34,4 +38,17 @@ class ConvertSpodTest < Minitest::Test
     assert_equal ["44.9378926", "-93.1690434", :extracted], res
   end
 
+  def test_geocode_address_skip_geocoding
+    @converter.skip_geocoding = true
+
+    assert_equal [nil,nil,:skipped], @converter.send(:geocode_address, @address)
+  end
+
+  def test_geocode_address
+    Geocoder.stub(:coordinates, ['lat', 'long']) do
+      Geocoder.stub(:config, {lookup: :happy}) do
+        assert_equal ['lat', 'long', :happy], @converter.send(:geocode_address, @address)
+      end
+    end
+  end
 end

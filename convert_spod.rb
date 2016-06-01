@@ -7,6 +7,7 @@ require 'byebug'
 # Convert Socrata data to have separate lat/long columns
 class ConvertSpod
   LATLONG_REGEX = /\((\d.*)\)/
+  LATLONG_REGEX_2 = /\((.*),\s*(-?.*)\)/ # possibly for address_cleaner
 
   def initialize(filename,location_index,skip_geocoding)
     @filename = filename
@@ -56,8 +57,8 @@ class ConvertSpod
     return [nil,nil,:skipped] if @skip_geocoding
     cleansed = address_cleaner address
     begin
-      Geocoder.coordinates(cleansed) + [Geocoder.config[:lookup]]
-      sleep 0.22
+      sleep 0.22 # prevent ddosing
+      ret = Geocoder.coordinates(cleansed) + [Geocoder.config[:lookup]]
     rescue StandardError => e
       puts "#{e.class}:#{e.message} for #{address}"
     end
@@ -89,6 +90,7 @@ class ConvertSpod
     new_row
   end
 
+  # not exactly sure what addresses this was meant to handle
   def address_cleaner(address)
     elements = address.match(/(.*)\s*-.*(.*)/).to_a
     if elements.size > 0
